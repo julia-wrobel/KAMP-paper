@@ -42,7 +42,7 @@ source(here::here("source", "get_permutation_distribution.R"))
 
 n = c(5000, 10000, 20000)
 abundance1 = c(0.001, 0.05, 0.01)
-abundance2 = c(0.01, 0.1, 0.2)
+abundance2 = c(0.05)
 type = c("inhom", "inhomClust")
 seed_start = 1000
 N_iter = 50
@@ -85,7 +85,7 @@ m2 = params$m2[scenario]
 abundance1 = params$abundance1[scenario]
 abundance2 = params$abundance2[scenario]
 type = params$type[scenario]
-thinning_proportions = c(0, 0.25, 0.5, 0.75, 0.9)
+thinning_proportions = c(0, 0.25, 0.5, 0.75)
 SEED.START = params$seed_start[scenario]
 
 results = vector("list", length = N_iter)

@@ -50,7 +50,7 @@ Here we load and process simulation results. Full simulations involve 36 scenari
 
 ```{r}
 # load only results for VB and TS
-files = list.files(here::here("output", "kamplite", "20260831"), 
+files = list.files(here::here("output", "kamplite", "20260901"), 
 									 full.names =  TRUE)
 
 # call merge_files() defined in utils.R

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --array=1-54%50
+#SBATCH --array=1-18%20
 #SBATCH --job-name=bivariate_kamplite_job
 #SBATCH --partition=wrobel,encore
 #SBATCH --output=bivariate_kamplite.out
