@@ -40,8 +40,7 @@ Source file for consolidating simulations
 source(here::here("source", "utils.R"))
 ```
 
-
-# Expectation
+# Univariate
 
 ## Clean and process simulation data
 
@@ -64,6 +63,7 @@ df = map_dfr(files, merge_files)
 ```{r}
 # make comp times dataset
 times_df = df %>%
+  filter(lambda_n != 2000) %>%
   select(r, iter, type, lambda_n,
          abundance,
          p_thin,
@@ -93,27 +93,31 @@ df = df %>%
 
 ```{r}
  p_time = times_df %>%
-  filter(type == "inhom",
-         p_thin != 0.9) %>%
+  filter(
+      type == "inhomClust",
+         p_thin != 0.9,
+         #abundance != 0.001
+         ) %>%
   group_by(p_thin, lambda_n, abundance) %>%
   summarize(time = median(time)) %>%
   ungroup() %>%
   mutate(Thinning = factor(p_thin),
-         lambda_n = factor(lambda_n, levels = c(1000, 2000, 5000, 10000))) %>%
+         lambda_n = factor(lambda_n)) %>%
   ggplot(aes(lambda_n, time, color = Thinning, 
              group = interaction(lambda_n, Thinning))) +
-  geom_point() +
+  geom_point(size = 2) +
   geom_line(aes(group = Thinning), linewidth = 1.25) +
   theme_minimal() + 
-  theme(legend.position =c(0.75, 0.6)) +
+  theme(legend.position =c(0.85, 0.6)) +
   geom_line(aes(group = Thinning), linewidth = 1.25) +
   geom_hline(yintercept = log(1), linetype = 4, color = "gray") +
   labs(x = expression(lambda[n]),
        y = "Median time in seconds",
-       title = "Computation time") +
-   facet_wrap(~abundance, ncol = 3, scales= "free_x", labeller = label_both)
+       title = "Univariate KAMP lite: computation time") +
+   facet_wrap(~abundance, ncol = 4, scales= "free_x", labeller = label_both)
 
 
+p_time
 ```
 
 
@@ -124,7 +128,8 @@ Power = P(reject Ho|H1 True)
 power_df = df %>%
     filter(type %in% c("inhomogeneous + clustered"),
            r == 1.25,
-           p_thin != 0.9) %>%
+           p_thin != 0.9,
+           ) %>%
   group_by(type, p_thin, lambda_n, abundance) %>%
   summarize(power = sum(pvalue<= 0.05)/n(),
             n_sim = n()) %>%
@@ -136,17 +141,85 @@ power_df = df %>%
 p_power = power_df %>%
   ggplot(aes(lambda_n, power, group = p_thin,
              color = p_thin, linetype = p_thin)) +
-  geom_point(size = 3) +
+  geom_point(size = 2) +
   geom_line(linewidth = 1.25) +
   labs(y = "Power", x = expression(lambda[n]),
-       title = "Power") +
+       title = "Univariate KAMP lite: power") +
   #ylim(0.025, 1) +
   geom_hline(yintercept = 0.9, linetype = 4) +
   theme_minimal() + 
   theme(legend.position = "none", legend.title = element_blank()) +
-  facet_wrap(~abundance, ncol = 3, scales= "free_x", labeller = label_both)
+  facet_wrap(~abundance, ncol = 4, scales= "free_x", labeller = label_both)
 
-p_power
+
+
+
+```
+
+
+# bivariate
+
+
+```{r}
+# load only results for VB and TS
+files = list.files(here::here("output", "kamplite_bivariate", "20260909"),
+									 full.names =  TRUE)
+
+# call merge_files() defined in utils.R
+df = map_dfr(files, merge_files)
+
+```
+
+
+
+
+```{r}
+df = df %>%
+  filter((type == "inhom" & r == 0.5) | (type == "inhomClust" & r == 1.25)
+         ) %>%
+  mutate(abundance1 = factor(abundance1),
+         abundance2 = factor(abundance2),
+         value = trans-csr)  %>%
+  #filter(value < 25) %>%
+    mutate(type = factor(type, levels = c("inhom", "inhomClust"),
+                            labels = c("inhomogeneous",
+                                       "inhomogeneous + clustered")),
+         lambda_n = factor(lambda_n))
+```
+
+
+
+## Figures
+
+
+
+Power = P(reject Ho|H1 True)
+
+```{r}
+power_df = df %>%
+    filter(type %in% c("inhomogeneous + clustered"),
+           r == 1.25,
+           p_thin != 0.9
+           ) %>%
+  rename(abundance = abundance1) %>%
+  group_by(type, p_thin, lambda_n, abundance, abundance2) %>%
+  summarize(power = sum(pvalue<= 0.05)/n(),
+            n_sim = n()) %>%
+  ungroup() %>%
+    mutate(lambda_n = factor(lambda_n),
+         p_thin = factor(p_thin))
+
+p_power_biv = power_df %>%
+  ggplot(aes(lambda_n, power, group = p_thin,
+             color = p_thin)) +
+  geom_point(size = 2) +
+  geom_line(aes(linetype = p_thin), linewidth = 1.25) +
+  labs(y = "Power", x = expression(lambda[n]),
+       title = "Bivariate KAMP lite: power") +
+  geom_hline(yintercept = 0.9, linetype = 4) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  facet_wrap(~abundance, labeller = label_both)
 
 
 ```
@@ -154,10 +227,11 @@ p_power
 
 
 
-```{r fig_kamplite_times, fig.height = 6}
-p_time /p_power
-```
 
+
+```{r fig_kamplite_power, fig.height = 9}
+p_time /p_power/p_power_biv
+```
 
 
 
