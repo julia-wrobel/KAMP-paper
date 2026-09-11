@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --array=1-240%50
-#SBATCH --job-name=surv_job
+#SBATCH --array=1-480%10
+#SBATCH --job-name=var_bivariate
 #SBATCH --partition=encore
-#SBATCH --output=surv.out
-#SBATCH --error=surv.err
+#SBATCH --output=bivariate_variance.out
+#SBATCH --error=bivariate_variance.err
 
 module purge
 module load R
@@ -11,6 +11,6 @@ module load R
 # Rscript to run an r script
 # This stores which job is running (1, 2, 3, etc)
 JOBID=$SLURM_ARRAY_TASK_ID
-Rscript k_univariate_survival.R $JOBID
+Rscript k_bivariate_variance.R $JOBID
 
 

@@ -192,7 +192,7 @@ power_inhom = power_df %>%
 
 
 
-```{r supp_power_biv, fig.height = 6}
+```{r supp_fig_power_biv, fig.height = 6}
 (type1 + type1_inhom)/(power + power_inhom)
 ```
 

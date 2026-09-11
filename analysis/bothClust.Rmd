@@ -161,6 +161,6 @@ p_bothClust_power = power_df %>%
 ```
 
 
-```{r fig_sim_bothClust_combined, fig.width=10, fig.height=8}
+```{r supp_fig_sim_bothClust_combined, fig.width=10, fig.height=8}
 p_bothClust_expectation / p_bothClust_power
 ```

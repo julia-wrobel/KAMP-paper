@@ -1,15 +1,13 @@
 ####################################################################
 # Julia Wrobel
-# August 2024
+# October 2024
 #
-# This file produces simulations for univariate K under different data generation mechanisms
+# This file produces simulations for bivariate K under different data generation mechanisms
 # focusing on the variance/power. Runs 1000 iterations in chunks of 50 at a time.
 ####################################################################
 
 #suppressPackageStartupMessages()
 
-suppressPackageStartupMessages(library(MASS))
-suppressPackageStartupMessages(library(broom))
 suppressPackageStartupMessages(library(spatstat.random))
 suppressPackageStartupMessages(library(spatstat.geom))
 suppressPackageStartupMessages(library(spatstat.explore))
@@ -18,8 +16,7 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(purrr))
 suppressPackageStartupMessages(library(tidyr))
 suppressPackageStartupMessages(library(tictoc))
-#suppressPackageStartupMessages(library(scSpatialSIM))
-suppressPackageStartupMessages(library(survival))
+suppressPackageStartupMessages(library(scSpatialSIM))
 
 
 
@@ -35,57 +32,42 @@ if(substring(wd, 2, 6) == "Users"){
 ###############################################################
 ## define or source functions used in code below
 ###############################################################
-#source(here::here("source", "simulate_ppp.R"))
-source(here::here("source", "utils_k.R"))
-#source(here::here("source", "simulate_scSpatialSim.R"))
-
-
-
-###############################################################
-## load densities of KAMP values and K-KAMP values for use in simulation
-###############################################################
-
-load(file = here::here("data", "densities_ovarian_data.Rda"))
-
+source(here::here("source", "simulate_ppp.R"))
+source(here::here("source", "utils_k_bivariate.R"))
+source(here::here("source", "simulate_scSpatialSim.R"))
+source(here::here("source", "get_permutation_distribution.R"))
 
 ###############################################################
 ## set simulation design elements
 ###############################################################
 
-n = c(5000)
-abundance = c(0.1)
-type = c("inhomClust")
-beta_val = c(-1, -0.5, 0, 0.5, 1, 2)
-rho = c(.5) # correlation of covariates
-seed_start = 345
+n = c(1000, 2000, 5000, 10000)
+abundance = c(0.01, 0.1, 0.2)
+type = c("hom", "inhom", "homClust", "inhomClust")
+nperm = 1000
+seed_start = 1000
 N_iter = 1000
-n_subj = c(100, 500, 1000, 2000)
 maxiter = (seq(1, N_iter, by = 100)-1) + 100
 
 params = expand.grid(seed_start = seed_start,
                      type = type,
                      n = n,
                      abundance = abundance,
-                     beta_val = beta_val,
-                     rho = rho,
-                     n_subj = n_subj,
                      maxiter = (seq(1, N_iter, by = 100)-1) + 100) %>%
   mutate(m = n * abundance) %>%
   filter(m >=5)
 
 ## record date for analysis; create directory for results
 Date = gsub("-", "", Sys.Date())
-dir.create(file.path(here::here("output", "univariate_survival"), Date), showWarnings = FALSE)
+dir.create(file.path(here::here("output", "bivariate_variance", "varyAbundance"), Date), showWarnings = FALSE)
 
 ## define number of simulations and parameter scenario
 if(doLocal) {
   scenario = 1
-  it = 100
-  n_subj = 500
+  N_iter = 2
 }else{
   # defined from batch script params
   scenario <- as.numeric(commandArgs(trailingOnly=TRUE))
-  it = 100
 }
 
 
@@ -98,66 +80,51 @@ if(doLocal) {
 ###############################################################
 n = params$n[scenario]
 abundance = params$abundance[scenario]
-n_subj = params$n_subj[scenario]
 m = n * abundance
 type = params$type[scenario]
-beta_val = params$beta_val[scenario]
-rho = params$rho[scenario]
 SEED.START = params$seed_start[scenario]
 maxiter = params$maxiter[scenario]
 
 iter_vec = (maxiter-99):maxiter
 
-results = vector("list", length = it)
-for(i in 1:it){
+results = vector("list", length = 100)
+for(i in 1:100){
   # set seed
   seed.iter = (SEED.START - 1)*N_iter + iter_vec[i]
   set.seed(seed.iter)
 
+  # simulate data
+  if(type %in% c("hom", "inhom")){
+    ppp_obj <- mxsim(n, abundance, type, bivariate = TRUE)
+  }else{
+    ppp_obj <- sim_scSpatial(n, abundance, type, bivariate = TRUE)
+  }
 
   ################################################################################
   ##
   # Calculate Ripley's K and fperm statistics
-  kamp = sample(density_kamp$x, size = n_subj, prob = density_kamp$y, replace = TRUE)
-  error = sample(density_error$x, size = n_subj, prob = density_error$y, replace = TRUE)
-  k = kamp + error
-  r = 1
-  id = 1:n_subj
+  k_kamp = get_k_power_biv(ppp_obj)
+  k_perm = get_k_power_permOnly_biv(ppp_obj, nperm = nperm)
 
-  kamp = as.vector(scale(kamp))
-  k = as.vector(scale(k))
-
-
-  kvals = data.frame(id = id, r = r, k = k, kamp = kamp)
-
-
-  #hist(kamp)
-  #hist(k)
-  #mean(kamp)
-  #mean(k)
-  #sd(k)
-  #sd(kamp)
-
-  # simulate survival data and fit cox models
-  fits = get_coxPH(n_subj, beta_val, rho, kvals)
-
-
-  fits = fits %>%
+  lambda_n = n
+  lambda_m = m
+  res = mutate(bind_rows(k_kamp, k_perm),n = ppp_obj$n,
+               m1 = subset(ppp_obj, marks == "immune1")$n,
+               m2 = subset(ppp_obj, marks == "immune2")$n
+               ) %>%
     mutate(iter = iter_vec[i],
            scenario = scenario,
            seed = seed.iter,
            type = type,
-           abundance = abundance,
-           rho = rho,
-           n_subj = n_subj,
-           beta_val = beta_val)
+           lambda_n = lambda_n,
+           abundance = abundance)
 
 
-  results[[i]] = fits
+  results[[i]] = res
 } # end for loop
 
 
-filename = paste0(here::here("output", "univariate_survival", Date), "/", scenario, ".RDA")
+filename = paste0(here::here("output", "bivariate_variance", "varyAbundance", Date), "/", scenario, ".RDA")
 save(results,
      file = filename)
 

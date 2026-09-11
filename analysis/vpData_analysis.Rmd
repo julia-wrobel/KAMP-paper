@@ -380,7 +380,7 @@ wrap_plots(list(high[[1]], low[[1]], patchy[[1]], patchy_noClust[[1]], high[[2]]
 
 Same as Figure 1, but including KAMP CSR value
 
-```{r fig_3subjs_epd, fig.height = 6, fig.width = 12}
+```{r fig_3subjs_kamp, fig.height = 6, fig.width = 12}
 
 
 wrap_plots(list(high[[1]], low[[1]], patchy[[1]], patchy_noClust[[1]], high[[3]], low[[3]], patchy[[3]], patchy_noClust[[3]]), ncol = 4)
@@ -872,7 +872,7 @@ cindex = cph_noResi %>%
 
 
 
-```{r fig_vpData_survival_uni, fig.width = 10, fig.height=6}
+```{r supp_fig_vpData_survival_uni, fig.width = 10, fig.height=6}
 es/pp/cindex+ plot_layout(heights = c(1.5, 1.5, 1.5))
 ```
 

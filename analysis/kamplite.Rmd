@@ -30,6 +30,16 @@ knitr::opts_chunk$set(echo = TRUE,
 )
 
 theme_set(theme_bw() + theme(legend.position = "bottom"))
+
+# colorblind-safe palette for thinning probability (Okabe-Ito subset), chosen
+# to avoid the hues used for K/Kinhom/perm/KAMP/KAMP lite in the other figures
+# (purple #6A3D9A, blue #1F78B4, green #4DAF4A, vermillion #D55E00, orange #E69F00)
+thinning_colors <- c(
+  "0"    = "#000000",  # black
+  "0.25" = "#56B4E9",  # sky blue
+  "0.5"  = "#F0E442",  # yellow
+  "0.75" = "#CC79A7"   # reddish purple
+)
 ```
 
 # Source code
@@ -107,10 +117,11 @@ df = df %>%
              group = interaction(lambda_n, Thinning))) +
   geom_point(size = 2) +
   geom_line(aes(group = Thinning), linewidth = 1.25) +
-  theme_minimal() + 
+  theme_minimal() +
   theme(legend.position =c(0.85, 0.6)) +
   geom_line(aes(group = Thinning), linewidth = 1.25) +
   geom_hline(yintercept = log(1), linetype = 4, color = "gray") +
+  scale_color_manual(values = thinning_colors) +
   labs(x = expression(lambda[n]),
        y = "Median time in seconds",
        title = "Univariate KAMP lite: computation time") +
@@ -147,8 +158,9 @@ p_power = power_df %>%
        title = "Univariate KAMP lite: power") +
   #ylim(0.025, 1) +
   geom_hline(yintercept = 0.9, linetype = 4) +
-  theme_minimal() + 
+  theme_minimal() +
   theme(legend.position = "none", legend.title = element_blank()) +
+  scale_color_manual(values = thinning_colors) +
   facet_wrap(~abundance, ncol = 4, scales= "free_x", labeller = label_both)
 
 
@@ -219,6 +231,7 @@ p_power_biv = power_df %>%
   geom_hline(yintercept = 0.9, linetype = 4) +
   theme_minimal() +
   theme(legend.position = "none") +
+  scale_color_manual(values = thinning_colors) +
   facet_wrap(~abundance, labeller = label_both)
 
 
@@ -229,7 +242,7 @@ p_power_biv = power_df %>%
 
 
 
-```{r fig_kamplite_power, fig.height = 9}
+```{r supp_fig_kamplite_power, fig.height = 9}
 p_time /p_power/p_power_biv
 ```
 
