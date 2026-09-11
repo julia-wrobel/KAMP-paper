@@ -98,8 +98,13 @@ for(iter in 1:N_iter){
   ################################################################################
   ##
   ## go over all the thinning options you are interested in
+  # "inhom" uses mxsim()'s fixed [0,1]x[0,1] window, unlike the other types
+  # (sim_scSpatial()'s fixed [0,10]x[0,10] window), so it gets dense fast as n
+  # grows. r_max = 0.15 keeps get_permutation_distribution()'s closepairs()
+  # cost bounded at large n (r >= 0.25 hits an out-of-memory failure at
+  # n = 20000 locally; see kamplite.Rmd's Supplemental Figure D.4 discussion).
   if(type == "inhom"){
-    radii = c(0, 0.25, 0.5)
+    radii = c(0, 0.05, 0.1, 0.15)
   }else{
     radii = c(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2)
   }

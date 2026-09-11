@@ -1,8 +1,10 @@
 # KAMP-paper
 
-Code for "KAMP" (Kernel/K-function Adjusted via Marked Permutation) — simulations and real-data
-analysis of Ripley's K-based spatial clustering statistics for multiplex imaging data, using the
-HGSOC (ovarian cancer) VectraPolaris dataset.
+## About
+
+This repository contains code for reproducing the methods, simulations, figures, and tables in
+"A robust, scalable K-statistic for quantifying immune cell clustering in spatial proteomics data,"
+by Julia Wrobel and Hoseung Song.
 
 ## Repository structure
 

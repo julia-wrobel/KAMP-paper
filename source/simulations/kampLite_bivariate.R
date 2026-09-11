@@ -106,8 +106,19 @@ for(iter in 1:N_iter){
   ################################################################################
   ##
   ## go over all the thinning options you are interested in
+  # "inhom" uses mxsim()'s fixed [0,1]x[0,1] window, unlike "inhomClust"
+  # (sim_scSpatial()'s fixed [0,10]x[0,10] window), so it gets dense fast as n
+  # grows. r_max = 0.15 keeps get_permutation_distribution()'s closepairs()
+  # cost bounded at large n (r >= 0.25 hits an out-of-memory failure at
+  # n = 20000 locally; see kampLite_univariate.R for the same fix).
+  if(type == "inhom"){
+    radii = c(0, 0.05, 0.1, 0.15)
+  }else{
+    radii = c(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2)
+  }
+
   k_lite = map_dfr(thinning_proportions, get_kamplite_biv,
-          ppp_obj = ppp_obj, rvec = c(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2))
+          ppp_obj = ppp_obj, rvec = radii)
 
 
   lambda_n = n

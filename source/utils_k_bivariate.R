@@ -144,6 +144,13 @@ get_kamplite_biv = function(ppp_obj,
   ################################################################################
   kamplite_var = map_dfr(rvec, get_permutation_distribution, ppp_obj = ppp_obj_lite, bivariate = TRUE)
 
+  # round r before joining: Kest() reconstructs r internally (floating-point
+  # rounding), while get_permutation_distribution() uses the raw rvec value,
+  # so the two r columns can differ in the last bit and silently fail to
+  # match on an exact-equality join, leaving var/Z/pvalue as NA
+  kamp_lite = kamp_lite %>% mutate(r = round(r, 8))
+  kamplite_var = kamplite_var %>% mutate(r = round(r, 8))
+
   kamp_lite = left_join(kamp_lite, kamplite_var) %>%
     select(-khat, -expectation) %>%
     mutate(time = time_kamplite$toc - time_kamplite$tic)
