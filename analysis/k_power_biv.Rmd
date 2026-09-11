@@ -56,7 +56,7 @@ source(here::here("source", "utils.R"))
 files = list.files(here::here("output", "bivariate_variance"),
                    full.names =  TRUE, recursive = TRUE, pattern = ".RDA")
 
-df = map_dfr(files, merge_files, variance = TRUE)
+df = map_dfr(files, merge_files)
 ```
 
 

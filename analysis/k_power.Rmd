@@ -57,7 +57,7 @@ source(here::here("source", "utils.R"))
 files = list.files(here::here("output", "univariate_variance"),
                    full.names =  TRUE, recursive = TRUE, pattern = ".RDA")
 
-df = map_dfr(files, merge_files, variance = TRUE) %>%
+df = map_dfr(files, merge_files) %>%
   filter(method != "kperm approx") %>%
   mutate(method = factor(method, levels = c("kperm", "kamp", "kamplite"),
                          labels = c("perm", "KAMP", "KAMP lite")))

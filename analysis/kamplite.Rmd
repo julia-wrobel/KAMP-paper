@@ -65,10 +65,72 @@ files = list.files(here::here("output", "kamplite", "20260901"),
 # call merge_files() defined in utils.R
 df = map_dfr(files, merge_files)
 
+df = df %>%
+  mutate(value = trans-csr) 
+
+```
+
+
+### Supplemental Figure D.4
+
+Bottom row: distribution of the log variance of the permutation distribution
+for $K_s(r)$, computed using KAMP lite, across abundance, $\lambda_n$, and
+thinning probability, under the two spatial homogeneity conditions
+("inhomogeneous" and "inhomogeneous + clustered"). Uses the `var` column of
+`df` and whichever abundance/$\lambda_n$ scenarios are currently available
+(excluding $\lambda_n$ = 2000), rather than matching the abundance/$\lambda_n$
+values in the original submitted figure. Stored in `var_df` (not `df`) so it
+doesn't interfere with the `df` reassignment in Supplemental Figure D.3 below.
+
+```{r}
+var_df = df %>%
+  filter(lambda_n != 2000,
+         lambda_n != 20000,
+         p_thin != 0.9,
+         !abundance %in% c(0.001, 0.05),
+         (type == "inhom" & r == 0.5) | (type == "inhomClust" & r == 1.25)) %>%
+  mutate(abundance = factor(abundance),
+         lambda_n = factor(str_c("lambda[n]: ", lambda_n),
+                           levels = str_c("lambda[n]: ", sort(unique(lambda_n)))),
+         p_thin = factor(p_thin),
+         type = factor(type, levels = c("inhom", "inhomClust"),
+                       labels = c("inhomogeneous", "inhomogeneous + clustered")),
+         log_var = log(var))
+```
+
+```{r}
+p_var_inhom = var_df %>%
+  filter(type == "inhomogeneous") %>%
+  ggplot(aes(abundance, log_var, color = p_thin, fill = p_thin)) +
+  geom_boxplot(alpha = 0.6, outlier.size = 0.5) +
+  scale_color_manual(values = thinning_colors) +
+  scale_fill_manual(values = thinning_colors) +
+  labs(x = "Abundance", y = "log variance",
+       fill = "Thinning", color = "Thinning",
+       title = "Inhomogeneous") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  facet_wrap(~lambda_n, nrow = 1, labeller = label_parsed)
+
+p_var_inhomClust = var_df %>%
+  filter(type == "inhomogeneous + clustered") %>%
+  ggplot(aes(abundance, log_var, color = p_thin, fill = p_thin)) +
+  geom_boxplot(alpha = 0.6, outlier.size = 0.5) +
+  scale_color_manual(values = thinning_colors) +
+  scale_fill_manual(values = thinning_colors) +
+  labs(x = "Abundance", y = "log variance",
+       title = "Inhomogeneous + clustered") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  facet_wrap(~lambda_n, nrow = 1, labeller = label_parsed)
+
+p_var = p_var_inhom + p_var_inhomClust
+p_var
 ```
 
 
 
+### Supplemental Figure D.3
 
 ```{r}
 # make comp times dataset

@@ -126,7 +126,7 @@ scenario: Power = P(reject H0 | H1 true).
 files_var = list.files(here::here("output", "bothClust_variance"),
                        full.names = TRUE, recursive = TRUE, pattern = ".RDA")
 
-df_var = map_dfr(files_var, merge_files, variance = TRUE) %>%
+df_var = map_dfr(files_var, merge_files) %>%
   filter(method != "kperm approx") %>%
   mutate(method = factor(method, levels = c("kperm", "kamp", "kamplite"),
                          labels = c("perm", "KAMP", "KAMP lite")),

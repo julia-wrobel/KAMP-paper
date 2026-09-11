@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --array=1-36%10
+#SBATCH --array=1-30%30
 #SBATCH --job-name=univariate_kamplite_job
 #SBATCH --partition=wrobel
 #SBATCH --output=univariate_kamplite.out

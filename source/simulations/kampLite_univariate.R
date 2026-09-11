@@ -38,7 +38,7 @@ source(here::here("source", "get_permutation_distribution.R"))
 ## set simulation design elements
 ###############################################################
 
-n = c(1000, 2000, 5000, 10000, 20000)
+n = c(1000, 5000, 10000, 20000)
 abundance = c(0.001, 0.05, 0.01, 0.1)
 type = c("inhom", "inhomClust")
 seed_start = 1000
@@ -58,7 +58,7 @@ dir.create(file.path(here::here("output", "kamplite"), Date), showWarnings = FAL
 
 ## define number of simulations and parameter scenario
 if(doLocal) {
-  scenario = 3
+  scenario = 17
   #scenario = 3
   N_iter = 2
 }else{
@@ -98,11 +98,17 @@ for(iter in 1:N_iter){
   ################################################################################
   ##
   ## go over all the thinning options you are interested in
+  if(type == "inhom"){
+    radii = c(0, 0.25, 0.5)
+  }else{
+    radii = c(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2)
+  }
+
   k_lite = map_dfr(thinning_proportions, get_kamplite,
-          ppp_obj = ppp_obj, rvec = c(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2))
+          ppp_obj = ppp_obj, rvec = radii)
 
 
-  ## need to add in getting k thing, see error
+
   lambda_n = n
   lambda_m = m
   res = mutate(k_lite, n = ppp_obj$n, m = subset(ppp_obj, marks == "immune")$n) %>%
