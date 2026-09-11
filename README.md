@@ -1,4 +1,4 @@
-# 202208_wrobel_permutations
+# KAMP-paper
 
 ## Project Directory
 
