@@ -258,7 +258,7 @@ plot_k = function(idnum){
                size = 0.5, color = "darkred") +
     labs(x = "x position", y = "y position") +
     theme(axis.text = element_blank(), legend.position = "none",
-          axis.title = element_text(size = 12)) 
+          axis.title = element_text(size = 14))
   
 
  p2 =   df %>%
@@ -277,9 +277,10 @@ plot_k = function(idnum){
     labs(y = TeX("K(r)")) +
     theme(legend.position = c(.2,.75),
           legend.title=element_blank(),
-          axis.title = element_text(size = 14),
+          axis.title = element_text(size = 16),
           axis.text.y = element_blank(),
-          legend.text = element_text(size = 14))
+          axis.text.x = element_text(size = 13),
+          legend.text = element_text(size = 18))
 
   
   
@@ -291,30 +292,34 @@ plot_k = function(idnum){
            epdlite = kamp_lite) %>%
    pivot_longer(theo:epdlite, names_to = "K", values_to = "value") %>%
     filter(sample_id == idnum, r <=150) %>%
-    mutate(K = factor(K, levels = c("k", "epd",  "epdlite", "theo"))) %>%
+    mutate(K = factor(K, levels = c("k", "epdlite", "epd", "theo"))) %>%
     ggplot(aes(r, value, color = K, linetype = K)) +
     geom_line(linewidth = 1.75) +
-    scale_colour_manual(values = c("#6A3D9A", "#D55E00", "#E69F00", "gray"),
+    scale_colour_manual(values = c("#6A3D9A", "#E69F00", "#D55E00", "gray"),
                         labels = c(k = TeX("$\\hat{K}(r)$"),
                                    epd = TeX("$E_{KAMP}[\\hat{K}(r)]$"),
                                    epdlite = TeX("$E_{KAMPlite}[\\hat{K}(r)]$"),
                                    theo = TeX("$\\pi r^2$"))) +
-        scale_linetype_manual(values = c(1, 4, 2, 5),
+        scale_linetype_manual(values = c(1, 2, 4, 5),
                         labels = c(k = TeX("$\\hat{K}(r)$"),
                                    epd = TeX("$E_{KAMP}[\\hat{K}(r)]$"),
                                    epdlite = TeX("$E_{KAMPlite}[\\hat{K}(r)]$"),
                                    theo = TeX("$\\pi r^2$"))
                         ) +
     labs(y = TeX("K(r)")) +
-    theme(legend.position = c(.25,.7),
+    theme(legend.position = c(.38,.72),
           legend.title=element_blank(),
-          axis.title = element_text(size = 14),
+          legend.key.width = unit(1.1, "lines"),
+          legend.key.height = unit(0.9, "lines"),
+          legend.key.spacing.y = unit(0, "lines"),
+          axis.title = element_text(size = 16),
           axis.text.y = element_blank(),
-          legend.text = element_text(size = 14),
+          axis.text.x = element_text(size = 13),
+          legend.text = element_text(size = 18),
           legend.background = element_rect(fill = "transparent", color = NA))
 
 
-    
+
   p4 = df %>%
     select(-time) %>%
     filter(method %in% c("k", "kamp", "kamp_lite")) %>%
@@ -369,7 +374,12 @@ patchy = plot_k(patchy_k)
 patchy_noClust = plot_k(patchy_k2)
 
 
-wrap_plots(list(high[[1]], low[[1]], patchy[[1]], patchy_noClust[[1]], high[[2]], low[[2]], patchy[[2]], patchy_noClust[[2]]), ncol = 4)
+wrap_plots(list(high[[1]], low[[1]], patchy[[1]], patchy_noClust[[1]],
+                high[[2]],
+                low[[2]] + theme(legend.position = "none"),
+                patchy[[2]] + theme(legend.position = "none"),
+                patchy_noClust[[2]] + theme(legend.position = "none")),
+           ncol = 4)
 
 ```
 
@@ -383,7 +393,12 @@ Same as Figure 1, but including KAMP CSR value
 ```{r fig_3subjs_kamp, fig.height = 6, fig.width = 12}
 
 
-wrap_plots(list(high[[1]], low[[1]], patchy[[1]], patchy_noClust[[1]], high[[3]], low[[3]], patchy[[3]], patchy_noClust[[3]]), ncol = 4)
+wrap_plots(list(high[[1]], low[[1]], patchy[[1]], patchy_noClust[[1]],
+                high[[3]],
+                low[[3]] + theme(legend.position = "none"),
+                patchy[[3]] + theme(legend.position = "none"),
+                patchy_noClust[[3]] + theme(legend.position = "none")),
+           ncol = 4)
 
 
 ```
